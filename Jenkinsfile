@@ -59,7 +59,6 @@ pipeline {
                             -Dsonar.test.inclusions=src/test_*.py \
                             -Dsonar.python.coverage.reportPaths=coverage.xml \
                             -Dsonar.python.version=3 \
-                            -Dsonar.branch.name=${BRANCH_ENV} \
                             -Dsonar.host.url=${SONAR_HOST_URL}
                     """
                 }
@@ -97,7 +96,7 @@ pipeline {
             )
             emailext(
                 subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "<h2 style='color:green'>Quality Gate PASSED</h2><p>Branch: ${BRANCH_ENV}</p><p><a href='${env.BUILD_URL}'>View Build</a></p>",
+                body: "<h2 style='color:green'>Quality Gate PASSED</h2><p>Branch: ${BRANCH_ENV}</p><p><a href='${env.BUILD_URL}'>View Build</a></p><p><a href='${SONAR_HOST_URL}'>View SonarQube</a></p>",
                 mimeType: 'text/html',
                 to: RECIPIENTS
             )
