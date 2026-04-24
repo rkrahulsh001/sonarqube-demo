@@ -87,30 +87,97 @@ pipeline {
             echo "Build: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
             echo "Status: ${currentBuild.currentResult}"
         }
+
         success {
             slackSend(
                 channel: '#jenkins-notifications-',
                 color: 'good',
-                message: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} | Quality Gate PASSED | Branch: ${BRANCH_ENV}",
-                tokenCredentialId: 'slack-token'
+                tokenCredentialId: 'slack-token',
+                message: """✅ *SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}*
+Job    : ${env.JOB_NAME}
+Build  : #${env.BUILD_NUMBER}
+Branch : ${BRANCH_ENV}
+URL    : ${env.BUILD_URL}
+
+*Quick Links:*
+🔗 <${env.BUILD_URL}|View Build Page>
+✅ <${env.BUILD_URL}testReport|Test Results>
+📊 <${SONAR_HOST_URL}/dashboard?id=${SONAR_PROJECT_KEY}|SonarQube Report>
+📋 <${env.BUILD_URL}console|Console Output>
+
+Status : SUCCESS ✅"""
             )
             emailext(
-                subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "<h2 style='color:green'>Quality Gate PASSED</h2><p>Branch: ${BRANCH_ENV}</p><p><a href='${env.BUILD_URL}'>View Build</a></p><p><a href='${SONAR_HOST_URL}'>View SonarQube</a></p>",
+                subject: "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;padding:20px;">
+<div style="background:#28a745;padding:15px;border-radius:8px;margin-bottom:20px;">
+  <h2 style="color:white;margin:0;">✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}</h2>
+</div>
+<table style="width:100%;border-collapse:collapse;">
+  <tr style="background:#f2f2f2;">
+    <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Job</td>
+    <td style="padding:8px;border:1px solid #ddd;">${env.JOB_NAME}</td></tr>
+  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Build</td>
+    <td style="padding:8px;border:1px solid #ddd;">#${env.BUILD_NUMBER}</td></tr>
+  <tr style="background:#f2f2f2;">
+    <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Branch</td>
+    <td style="padding:8px;border:1px solid #ddd;">${BRANCH_ENV}</td></tr>
+  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Quality Gate</td>
+    <td style="padding:8px;border:1px solid #ddd;color:green;font-weight:bold;">PASSED ✅</td></tr>
+</table>
+<div style="margin-top:15px;">
+  <a href="${env.BUILD_URL}" style="background:#0066cc;color:white;padding:8px 15px;border-radius:4px;text-decoration:none;margin-right:10px;">View Build</a>
+  <a href="${SONAR_HOST_URL}/dashboard?id=${SONAR_PROJECT_KEY}" style="background:#28a745;color:white;padding:8px 15px;border-radius:4px;text-decoration:none;">SonarQube Report</a>
+</div>
+</body></html>""",
                 mimeType: 'text/html',
                 to: RECIPIENTS
             )
         }
+
         failure {
             slackSend(
                 channel: '#jenkins-notifications-',
                 color: 'danger',
-                message: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER} | Quality Gate FAILED | Branch: ${BRANCH_ENV}",
-                tokenCredentialId: 'slack-token'
+                tokenCredentialId: 'slack-token',
+                message: """❌ *FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}*
+Job    : ${env.JOB_NAME}
+Build  : #${env.BUILD_NUMBER}
+Branch : ${BRANCH_ENV}
+URL    : ${env.BUILD_URL}
+
+*Quick Links:*
+🔗 <${env.BUILD_URL}|View Build Page>
+📋 <${env.BUILD_URL}console|Console Output>
+🔍 <${SONAR_HOST_URL}/dashboard?id=${SONAR_PROJECT_KEY}|SonarQube Issues>
+
+Status : FAILED ❌"""
             )
             emailext(
-                subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "<h2 style='color:red'>Quality Gate FAILED</h2><p>Branch: ${BRANCH_ENV}</p><p><a href='${env.BUILD_URL}'>View Build</a></p>",
+                subject: "❌ FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;padding:20px;">
+<div style="background:#dc3545;padding:15px;border-radius:8px;margin-bottom:20px;">
+  <h2 style="color:white;margin:0;">❌ FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}</h2>
+</div>
+<table style="width:100%;border-collapse:collapse;">
+  <tr style="background:#f2f2f2;">
+    <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Job</td>
+    <td style="padding:8px;border:1px solid #ddd;">${env.JOB_NAME}</td></tr>
+  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Build</td>
+    <td style="padding:8px;border:1px solid #ddd;">#${env.BUILD_NUMBER}</td></tr>
+  <tr style="background:#f2f2f2;">
+    <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Branch</td>
+    <td style="padding:8px;border:1px solid #ddd;">${BRANCH_ENV}</td></tr>
+  <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Quality Gate</td>
+    <td style="padding:8px;border:1px solid #ddd;color:red;font-weight:bold;">FAILED ❌</td></tr>
+</table>
+<div style="margin-top:15px;">
+  <a href="${env.BUILD_URL}console" style="background:#dc3545;color:white;padding:8px 15px;border-radius:4px;text-decoration:none;margin-right:10px;">Console Output</a>
+  <a href="${SONAR_HOST_URL}/dashboard?id=${SONAR_PROJECT_KEY}" style="background:#ffc107;color:black;padding:8px 15px;border-radius:4px;text-decoration:none;">View Issues</a>
+</div>
+</body></html>""",
                 mimeType: 'text/html',
                 to: RECIPIENTS,
                 attachLog: true
